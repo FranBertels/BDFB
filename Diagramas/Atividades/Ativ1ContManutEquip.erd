@@ -1,0 +1,91 @@
+{
+  "$schema": "https://raw.githubusercontent.com/dineug/erd-editor/main/json-schema/schema.json",
+  "version": "3.0.0",
+  "settings": {
+    "width": 2000,
+    "height": 2000,
+    "scrollTop": -68.0128,
+    "scrollLeft": -69.3942,
+    "zoomLevel": 1,
+    "show": 431,
+    "database": 4,
+    "databaseName": "",
+    "canvasType": "ERD",
+    "language": 1,
+    "tableNameCase": 4,
+    "columnNameCase": 2,
+    "bracketType": 1,
+    "relationshipDataTypeSync": true,
+    "relationshipOptimization": false,
+    "columnOrder": [
+      1,
+      2,
+      4,
+      8,
+      16,
+      32,
+      64
+    ],
+    "maxWidthComment": -1,
+    "ignoreSaveSettings": 0
+  },
+  "doc": {
+    "tableIds": [],
+    "relationshipIds": [],
+    "indexIds": [],
+    "memoIds": []
+  },
+  "collections": {
+    "tableEntities": {
+      "5d65YZIQvNuV_Q4nzXyFG": {
+        "id": "5d65YZIQvNuV_Q4nzXyFG",
+        "name": "equipamento",
+        "comment": "",
+        "columnIds": [
+          "t8jObhREwnMhrHuyVa3rz"
+        ],
+        "seqColumnIds": [
+          "t8jObhREwnMhrHuyVa3rz"
+        ],
+        "ui": {
+          "x": 269.3942,
+          "y": 168.0128,
+          "zIndex": 2,
+          "widthName": 73,
+          "widthComment": 60,
+          "color": ""
+        },
+        "meta": {
+          "updateAt": 1786469834493,
+          "createAt": 1786469829261
+        }
+      }
+    },
+    "tableColumnEntities": {
+      "t8jObhREwnMhrHuyVa3rz": {
+        "id": "t8jObhREwnMhrHuyVa3rz",
+        "tableId": "5d65YZIQvNuV_Q4nzXyFG",
+        "name": "",
+        "comment": "",
+        "dataType": "",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1786469834492,
+          "createAt": 1786469834492
+        }
+      }
+    },
+    "relationshipEntities": {},
+    "indexEntities": {},
+    "indexColumnEntities": {},
+    "memoEntities": {}
+  }
+}
