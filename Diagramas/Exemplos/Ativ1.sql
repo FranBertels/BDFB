@@ -241,9 +241,6 @@ SELECT s.nome, COUNT(s.nome) FROM lotacao l INNER JOIN sala s ON s.id=l.idsala W
     ('2026-07-15', NULL, 1, 5, 2);*/
 
 --Faça uma consulta que apresente a qtde de operações (lotação e manutenção) de cada usuário em um determinado mês
-SELECT p.nome FROM pessoa p INNER JOIN lotacao l ON p.id=l.idpessoa UNION 
-SELECT p.nome FROM pessoa p INNER JOIN manutencao m ON p.id=m.idpessoa GROUP BY (p.nome);
-
 SELECT o.ano, o.mes, p.nome, COUNT(p.nome)
 FROM
     (SELECT idpessoa, EXTRACT(YEAR FROM data_entrada) AS ano, EXTRACT(MONTH FROM data_entrada) AS mes FROM lotacao 
@@ -251,4 +248,84 @@ FROM
     SELECT idpessoa, EXTRACT(YEAR FROM data_inicio), EXTRACT(MONTH FROM data_inicio) FROM manutencao) o
 INNER JOIN pessoa p ON p.id = o.idpessoa
 GROUP BY o.ano, o.mes, p.nome
+HAVING o.ano=2026
 ORDER BY o.ano, o.mes, p.nome;
+
+--Aula de index
+EXPLAIN ANALYZE SELECT * from equipamento WHERE descricao like '%lenovo%'
+
+CREATE INDEX idx_equipamento_descricao ON equipamento(descricao);
+
+CREATE VIEW equipamento_em_manutencao AS SELECT e.descricao,e.patrimonio, m.data_inicio AS manutencao_desde, m.custo, m.desc_problema, m.desc_servico FROM equipamento e INNER JOIN manutencao m ON e.id = m.idequipamento WHERE m.data_fim IS NULL;
+
+CREATE VIEW equipamento_barato AS SELECT * FROM equipamento WHERE preco<1000;
+
+CREATE MATERIALIZED VIEW equipamento_barato AS SELECT * FROM equipamento WHERE preco<1000;
+
+INSERT INTO equipamento (patrimonio, descricao, ativo, idpessoa, idcategoria, preco) VALUES
+    (8349, 'Alicate', DEFAULT, 1, 6, 35);
+
+REFRESH MATERIALIZED VIEW equipamento_barato;
+
+CREATE USER fran WITH PASSWORD 'fran';
+GRANT SELECT ON equipamento_barato TO fran;
+GRANT USAGE ON SCHEMA public TO fran;
+
+--Crie um procedimento que retorna a lotação atual de um equipamento
+CREATE OR REPLACE PROCEDURE lotacao_atual(
+p_id_equipamento INT,
+INOUT p_sala_lotacao TEXT
+)
+language plpgsql
+AS $$
+BEGIN
+    SELECT s.nome INTO p_sala_lotacao from 
+    equipamento e INNER JOIN lotacao l ON e.id = l.idequipamento 
+    INNER JOIN sala s ON s.id = l.idsala 
+    WHERE e.id=p_id_equipamento AND l.data_saida IS NULL;
+END;
+$$;
+
+--Crie uma função que estime a capacidade de pessoas do ambiente baseado na área (1 pessoa a cada 2m²)
+CREATE OR REPLACE FUNCTION qtde_pessoa(
+    f_area DECIMAL
+)
+RETURNS NUMERIC
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_qtde_total NUMERIC;
+BEGIN
+    IF f_area <= 0 THEN
+        Return 0;
+    END IF;
+v_qtde_total := f_area/2;
+
+RETURN FLOOR(v_qtde_total); --OU ROUND
+END;
+$$;
+
+--Crie um procedimento que realize a transferencia de um equipamento para outro ambiente ou sala
+CREATE OR REPLACE PROCEDURE transferencia_equip(
+    p_id_equipamento INT,
+    p_id_sala INT,
+    p_id_usuario INT
+)
+language plpgsql
+AS $$
+DECLARE
+    v_insert NUMERIC;
+BEGIN
+
+    UPDATE lotacao SET data_saida=CURRENT_DATE WHERE idequipamento = p_id_equipamento AND data_saida IS NULL;
+
+    INSERT INTO lotacao (data_entrada, data_saida, idsala, idequipamento, idpessoa) VALUES
+    (CURRENT_DATE, NULL, p_id_sala, p_id_equipamento, p_id_usuario) returning id INTO v_insert;
+
+    if v_insert > 0 THEN
+        COMMIT;
+    ELSE
+        ROLLBACK;
+    END IF;
+END;
+$$;
